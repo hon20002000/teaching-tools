@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="高中化學互動教學工具：第24章原子結構。">
-  <title>化學教學工具｜第24章 原子結構</title>
+  <meta name="description" content="高中化學互動教學工具：原子結構、鈉與氯。">
+  <title>化學教學工具｜互動教材</title>
 
   <style>
     :root {
@@ -17,6 +17,8 @@
       --muted: #64748b;
       --line: #d7e2ec;
       --shadow: 0 10px 28px rgba(18, 57, 91, 0.12);
+      --chlorine: #4c8a5d;
+      --chlorine-soft: #e5f5e8;
     }
 
     * {
@@ -202,6 +204,11 @@
       transform: translateY(-5px);
     }
 
+    .tool-card--chlorine:hover,
+    .tool-card--chlorine:focus-visible {
+      border-color: #79aa82;
+    }
+
     .tool-icon {
       display: grid;
       width: 54px;
@@ -211,6 +218,10 @@
       font-size: 1.75rem;
       background: var(--sky);
       border-radius: 14px;
+    }
+
+    .tool-card--chlorine .tool-icon {
+      background: var(--chlorine-soft);
     }
 
     .tag {
@@ -223,6 +234,11 @@
       font-weight: 700;
       background: #e5f5ff;
       border-radius: 999px;
+    }
+
+    .tool-card--chlorine .tag {
+      color: #2f6840;
+      background: var(--chlorine-soft);
     }
 
     .tool-card h3 {
@@ -245,6 +261,10 @@
       padding-top: 22px;
       color: var(--blue);
       font-weight: 750;
+    }
+
+    .tool-card--chlorine .open-tool {
+      color: var(--chlorine);
     }
 
     .open-tool::after {
@@ -341,7 +361,7 @@
 
     <h2 class="section-title">互動教學工具</h2>
 
-    <section class="tool-grid" aria-label="第24章互動工具">
+    <section class="tool-grid" aria-label="化學互動工具">
       <a class="tool-card"
          href="./CH24-atom-structure/hydrogen_orbitals.html">
         <div class="tool-icon" aria-hidden="true">⚛️</div>
@@ -362,6 +382,18 @@
         <p>
           探索移走原子電子所需的能量，並連結有效核電荷、電子層數、
           遮蔽效應與電子排布對電離能的影響。
+        </p>
+        <span class="open-tool">開啟互動教材</span>
+      </a>
+
+      <a class="tool-card tool-card--chlorine"
+         href="./CH1-sodium-chlorine/chlorine-water.html">
+        <div class="tool-icon" aria-hidden="true">🧪</div>
+        <span class="tag">CH1・鈉與氯</span>
+        <h3>氯水成分平衡</h3>
+        <p>
+          調整總氯量、pH、光照、溫度與放置時間，觀察 Cl₂、HClO、
+          ClO⁻ 與 Cl⁻ 的重新分配，理解氯元素守恆及酸鹼主導離子的變化。
         </p>
         <span class="open-tool">開啟互動教材</span>
       </a>
