@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="高中化學互動教學工具：第24章原子結構。">
+  <title>化學教學工具｜第24章 原子結構</title>
+
+  <style>
+    :root {
+      --navy: #12395b;
+      --blue: #1d6fa5;
+      --sky: #dff2ff;
+      --bg: #f3f7fb;
+      --card: #ffffff;
+      --text: #1f2933;
+      --muted: #64748b;
+      --line: #d7e2ec;
+      --shadow: 0 10px 28px rgba(18, 57, 91, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "PingFang TC",
+        "Microsoft JhengHei",
+        "Noto Sans TC",
+        Arial,
+        sans-serif;
+      background:
+        radial-gradient(circle at top left, #d9f0ff 0, transparent 32%),
+        linear-gradient(135deg, #f4faff 0%, var(--bg) 55%, #edf5fa 100%);
+    }
+
+    header {
+      position: relative;
+      overflow: hidden;
+      padding: 58px 24px 52px;
+      color: #ffffff;
+      text-align: center;
+      background: linear-gradient(135deg, #12395b 0%, #1d6fa5 100%);
+    }
+
+    header::before,
+    header::after {
+      position: absolute;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      content: "";
+    }
+
+    header::before {
+      width: 280px;
+      height: 280px;
+      top: -145px;
+      left: -90px;
+    }
+
+    header::after {
+      width: 360px;
+      height: 360px;
+      right: -135px;
+      bottom: -230px;
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .site-label {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 6px 12px;
+      color: #e7f6ff;
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 3.35rem);
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      max-width: 680px;
+      margin: 18px auto 0;
+      font-size: clamp(1rem, 2.7vw, 1.16rem);
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.93);
+    }
+
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 38px 0 60px;
+    }
+
+    .chapter-intro {
+      display: flex;
+      gap: 22px;
+      align-items: flex-start;
+      margin-bottom: 30px;
+      padding: 25px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .chapter-number {
+      display: grid;
+      flex: 0 0 70px;
+      width: 70px;
+      height: 70px;
+      place-items: center;
+      color: #ffffff;
+      font-size: 1.4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--blue), var(--navy));
+      border-radius: 16px;
+    }
+
+    .chapter-intro h2 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: 1.5rem;
+    }
+
+    .chapter-intro p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .section-title {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin: 34px 0 16px;
+      color: var(--navy);
+      font-size: 1.35rem;
+    }
+
+    .section-title::before {
+      display: block;
+      width: 6px;
+      height: 28px;
+      background: var(--blue);
+      border-radius: 999px;
+      content: "";
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .tool-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 270px;
+      padding: 26px;
+      color: inherit;
+      text-decoration: none;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 8px 20px rgba(18, 57, 91, 0.08);
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    .tool-card:hover,
+    .tool-card:focus-visible {
+      border-color: #79b7dd;
+      outline: none;
+      box-shadow: 0 16px 30px rgba(18, 57, 91, 0.17);
+      transform: translateY(-5px);
+    }
+
+    .tool-icon {
+      display: grid;
+      width: 54px;
+      height: 54px;
+      margin-bottom: 18px;
+      place-items: center;
+      font-size: 1.75rem;
+      background: var(--sky);
+      border-radius: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      width: fit-content;
+      margin-bottom: 10px;
+      padding: 4px 10px;
+      color: #14557f;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: #e5f5ff;
+      border-radius: 999px;
+    }
+
+    .tool-card h3 {
+      margin: 0 0 10px;
+      color: var(--navy);
+      font-size: 1.28rem;
+    }
+
+    .tool-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+
+    .open-tool {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 22px;
+      color: var(--blue);
+      font-weight: 750;
+    }
+
+    .open-tool::after {
+      font-size: 1.18rem;
+      content: "→";
+      transition: transform 0.18s ease;
+    }
+
+    .tool-card:hover .open-tool::after {
+      transform: translateX(5px);
+    }
+
+    .note {
+      margin-top: 30px;
+      padding: 18px 20px;
+      color: #36536a;
+      line-height: 1.75;
+      background: #eef8ff;
+      border-left: 5px solid var(--blue);
+      border-radius: 0 14px 14px 0;
+    }
+
+    .note strong {
+      color: var(--navy);
+    }
+
+    footer {
+      padding: 28px 20px 38px;
+      color: #718096;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      header {
+        padding: 46px 20px 42px;
+      }
+
+      main {
+        width: min(100% - 24px, 1080px);
+        padding-top: 24px;
+      }
+
+      .chapter-intro {
+        gap: 16px;
+        padding: 20px;
+      }
+
+      .chapter-number {
+        flex-basis: 58px;
+        width: 58px;
+        height: 58px;
+        font-size: 1.1rem;
+        border-radius: 14px;
+      }
+
+      .chapter-intro h2 {
+        font-size: 1.28rem;
+      }
+
+      .tool-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tool-card {
+        min-height: 230px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-content">
+      <div class="site-label">CHEMISTRY TEACHING TOOLS</div>
+      <h1>化學教學互動工具</h1>
+      <p class="subtitle">
+        以互動視覺化、模擬與探究活動，協助理解高中化學的重要概念。
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <section class="chapter-intro" aria-labelledby="chapter-title">
+      <div class="chapter-number">CH24</div>
+      <div>
+        <h2 id="chapter-title">原子結構</h2>
+        <p>
+          從氫原子軌域、電子機率分布到電離能，理解原子中電子的排列、
+          能量與原子性質之間的關係。
+        </p>
+      </div>
+    </section>
+
+    <h2 class="section-title">互動教學工具</h2>
+
+    <section class="tool-grid" aria-label="第24章互動工具">
+      <a class="tool-card"
+         href="./CH24-atom-structure/hydrogen_orbitals.html">
+        <div class="tool-icon" aria-hidden="true">⚛️</div>
+        <span class="tag">氫原子模型</span>
+        <h3>氫原子軌域</h3>
+        <p>
+          以視覺化方式觀察氫原子電子的機率分布，探索 s、p、d 軌域的形狀、
+          節面與量子數之間的關係。
+        </p>
+        <span class="open-tool">開啟互動教材</span>
+      </a>
+
+      <a class="tool-card"
+         href="./CH24-atom-structure/Ionization_energy.html">
+        <div class="tool-icon" aria-hidden="true">⚡</div>
+        <span class="tag">元素週期律</span>
+        <h3>電離能</h3>
+        <p>
+          探索移走原子電子所需的能量，並連結有效核電荷、電子層數、
+          遮蔽效應與電子排布對電離能的影響。
+        </p>
+        <span class="open-tool">開啟互動教材</span>
+      </a>
+    </section>
+
+    <aside class="note">
+      <strong>使用提示：</strong>
+      建議以 iPad 橫向模式開啟互動教材；如畫面未即時更新，
+      請重新整理網頁以取得最新版本。
+    </aside>
+  </main>
+
+  <footer>
+    © Leong Honsang · Chemistry Teaching Tools
+  </footer>
+</body>
+</html>

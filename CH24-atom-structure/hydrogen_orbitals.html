@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>氫原子軌域｜n=1–4 機率雲</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#07111f;color:#eaf4ff;font-family:system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif}header{padding:14px 18px 10px;border-bottom:1px solid #20344d;background:linear-gradient(120deg,#0b1d34,#08111e)}h1{margin:0;font-size:clamp(1.08rem,2.4vw,1.55rem)}header p{margin:6px 0 0;color:#b8cce3;font-size:.92rem;line-height:1.5}main{display:grid;grid-template-columns:minmax(230px,310px) 1fr;min-height:calc(100vh - 92px)}aside{padding:16px;border-right:1px solid #20344d;background:#091725;overflow-y:auto}.control{margin:0 0 15px}label{display:block;font-size:.88rem;color:#cce0f6;margin-bottom:6px}select,input[type=range],button{width:100%}select,button{border:1px solid #31506f;color:#eaf4ff;background:#10283e;border-radius:8px;padding:9px;font:inherit}button{cursor:pointer;margin-top:8px}button:hover{background:#173c5e}.secondary{background:#18222d}.line{display:flex;gap:8px}.line button{flex:1}.value{float:right;color:#65d5ff;font-variant-numeric:tabular-nums}.card{border:1px solid #28445f;border-radius:10px;background:#0c2032;padding:11px;margin:12px 0}.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#f6db88;font-size:.9rem;line-height:1.55}.note{font-size:.82rem;line-height:1.55;color:#b8cce3}#plot{width:100%;min-height:530px;height:calc(100vh - 92px)}.foot{margin-top:16px;font-size:.77rem;color:#86a6c3;line-height:1.5}@media(max-width:760px){main{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #20344d}#plot{min-height:520px;height:67vh}}
+</style>
+</head>
+<body>
+<header><h1>氫原子軌域：由 |ψ|² 抽樣的 3D 機率雲</h1><p>以散點逐步建立氫原子 n=1–4 的 s、p、d、f 軌域機率雲。拖曳旋轉、滾輪縮放。</p></header>
+<main><aside>
+<div class="control"><label for="orbital">軌域 <span id="orbitalName" class="value">2p_z</span></label><select id="orbital">
+<optgroup label="n = 1"><option value="1s">1s</option></optgroup>
+<optgroup label="n = 2"><option value="2s">2s</option><option value="2px">2pₓ</option><option value="2py">2pᵧ</option><option value="2pz" selected>2p_z</option></optgroup>
+<optgroup label="n = 3"><option value="3s">3s</option><option value="3px">3pₓ</option><option value="3py">3pᵧ</option><option value="3pz">3p_z</option><option value="3dz2">3d_z²</option><option value="3dxz">3d_xz</option><option value="3dyz">3d_yz</option><option value="3dxy">3d_xy</option><option value="3dx2y2">3d_x²−y²</option></optgroup>
+<optgroup label="n = 4"><option value="4s">4s</option><option value="4px">4pₓ</option><option value="4py">4pᵧ</option><option value="4pz">4p_z</option><option value="4dz2">4d_z²</option><option value="4dxz">4d_xz</option><option value="4dyz">4d_yz</option><option value="4dxy">4d_xy</option><option value="4dx2y2">4d_x²−y²</option><option value="4fxz2">4f_x(5z²−r²)</option><option value="4fyz2">4f_y(5z²−r²)</option><option value="4fz3">4f_z(5z²−3r²)</option><option value="4fxyz">4f_xyz</option><option value="4fx3">4f_x(x²−3y²)</option><option value="4fy3">4f_y(3x²−y²)</option><option value="4fzx2y2">4f_z(x²−y²)</option></optgroup>
+</select></div>
+<div class="control"><label for="rate">繪製速度 <span id="rateValue" class="value">500 點／秒</span></label><input id="rate" type="range" min="1" max="500" value="500"></div>
+<div class="control"><label for="maxPoints">最多散點數 <span id="maxValue" class="value">8,000</span></label><input id="maxPoints" type="range" min="200" max="10000" step="100" value="8000"></div>
+<div class="line"><button id="pauseBtn">暫停</button><button id="resetBtn" class="secondary">清除重畫</button></div>
+<div class="card"><div id="formula" class="formula"></div><div id="description" class="note"></div></div>
+<div class="card note"><strong>模型方法</strong><br>候選位置以拒絕抽樣處理；其被保留的相對機率與 |ψ(x,y,z)|² 成正比。藍色表示 ψ&gt;0，粉紅色表示 ψ&lt;0，反映波函數相位。</div>
+<div class="foot">單位為玻爾半徑 a₀。為維持與先前成功版本相同的穩定流程，此版本每次只累加少量點，並以 Plotly.react 定期刷新圖形。</div>
+</aside><div id="plot"></div></main>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+(function(){
+const orbital=document.getElementById('orbital'),rate=document.getElementById('rate'),maxPoints=document.getElementById('maxPoints'),plot=document.getElementById('plot');
+const specs={
+'1s':{R:8,title:'1s',f:(x,y,z,r)=>Math.exp(-r),formula:'ψ₁ₛ ∝ e<sup>−r</sup>',desc:'球對稱；沒有節面。'},
+'2s':{R:16,title:'2s',f:(x,y,z,r)=>(2-r)*Math.exp(-r/2),formula:'ψ₂ₛ ∝ (2 − r)e<sup>−r/2</sup>',desc:'球對稱；有 1 個徑向節面。'},
+'2px':{R:16,title:'2pₓ',f:(x,y,z,r)=>x*Math.exp(-r/2),formula:'ψ₂pₓ ∝ x e<sup>−r/2</sup>',desc:'沿 x 軸兩瓣；yz 平面是節面。'},
+'2py':{R:16,title:'2pᵧ',f:(x,y,z,r)=>y*Math.exp(-r/2),formula:'ψ₂pᵧ ∝ y e<sup>−r/2</sup>',desc:'沿 y 軸兩瓣；xz 平面是節面。'},
+'2pz':{R:16,title:'2p_z',f:(x,y,z,r)=>z*Math.exp(-r/2),formula:'ψ₂p_z ∝ z e<sup>−r/2</sup>',desc:'沿 z 軸兩瓣；xy 平面是節面。'},
+'3s':{R:28,title:'3s',f:(x,y,z,r)=>(27-18*r+2*r*r)*Math.exp(-r/3),formula:'ψ₃ₛ ∝ (27 − 18r + 2r²)e<sup>−r/3</sup>',desc:'球對稱；有 2 個徑向節面。'},
+'3px':{R:28,title:'3pₓ',f:(x,y,z,r)=>x*(4-r)*Math.exp(-r/3),formula:'ψ₃pₓ ∝ x(4 − r)e<sup>−r/3</sup>',desc:'有 1 個角節面及 1 個徑向節面。'},
+'3py':{R:28,title:'3pᵧ',f:(x,y,z,r)=>y*(4-r)*Math.exp(-r/3),formula:'ψ₃pᵧ ∝ y(4 − r)e<sup>−r/3</sup>',desc:'有 1 個角節面及 1 個徑向節面。'},
+'3pz':{R:28,title:'3p_z',f:(x,y,z,r)=>z*(4-r)*Math.exp(-r/3),formula:'ψ₃p_z ∝ z(4 − r)e<sup>−r/3</sup>',desc:'有 1 個角節面及 1 個徑向節面。'},
+'3dz2':{R:28,title:'3d_z²',f:(x,y,z,r)=>(2*z*z-x*x-y*y)*Math.exp(-r/3),formula:'ψ₃d<sub>z²</sub> ∝ (2z² − x² − y²)e<sup>−r/3</sup>',desc:'沿 z 軸兩瓣及赤道環。'},
+'3dxz':{R:28,title:'3d_xz',f:(x,y,z,r)=>x*z*Math.exp(-r/3),formula:'ψ₃d<sub>xz</sub> ∝ xz e<sup>−r/3</sup>',desc:'四瓣；xy 與 yz 平面為節面。'},
+'3dyz':{R:28,title:'3d_yz',f:(x,y,z,r)=>y*z*Math.exp(-r/3),formula:'ψ₃d<sub>yz</sub> ∝ yz e<sup>−r/3</sup>',desc:'四瓣；xy 與 xz 平面為節面。'},
+'3dxy':{R:28,title:'3d_xy',f:(x,y,z,r)=>x*y*Math.exp(-r/3),formula:'ψ₃d<sub>xy</sub> ∝ xy e<sup>−r/3</sup>',desc:'四瓣；xz 與 yz 平面為節面。'},
+'3dx2y2':{R:28,title:'3d_x²−y²',f:(x,y,z,r)=>(x*x-y*y)*Math.exp(-r/3),formula:'ψ₃d<sub>x²−y²</sub> ∝ (x² − y²)e<sup>−r/3</sup>',desc:'四瓣沿 x、y 軸。'},
+'4s':{R:44,title:'4s',f:(x,y,z,r)=>(192-144*r+24*r*r-r*r*r)*Math.exp(-r/4),formula:'ψ₄ₛ ∝ (192 − 144r + 24r² − r³)e<sup>−r/4</sup>',desc:'球對稱；有 3 個徑向節面。'},
+'4px':{R:44,title:'4pₓ',f:(x,y,z,r)=>x*(20-8*r+r*r)*Math.exp(-r/4),formula:'ψ₄pₓ ∝ x(20 − 8r + r²)e<sup>−r/4</sup>',desc:'1 個角節面、2 個徑向節面。'},
+'4py':{R:44,title:'4pᵧ',f:(x,y,z,r)=>y*(20-8*r+r*r)*Math.exp(-r/4),formula:'ψ₄pᵧ ∝ y(20 − 8r + r²)e<sup>−r/4</sup>',desc:'1 個角節面、2 個徑向節面。'},
+'4pz':{R:44,title:'4p_z',f:(x,y,z,r)=>z*(20-8*r+r*r)*Math.exp(-r/4),formula:'ψ₄p_z ∝ z(20 − 8r + r²)e<sup>−r/4</sup>',desc:'1 個角節面、2 個徑向節面。'},
+'4dz2':{R:44,title:'4d_z²',f:(x,y,z,r)=>(2*z*z-x*x-y*y)*(6-r)*Math.exp(-r/4),formula:'ψ₄d<sub>z²</sub> ∝ (2z² − x² − y²)(6 − r)e<sup>−r/4</sup>',desc:'2 個角節面、1 個徑向節面。'},
+'4dxz':{R:44,title:'4d_xz',f:(x,y,z,r)=>x*z*(6-r)*Math.exp(-r/4),formula:'ψ₄d<sub>xz</sub> ∝ xz(6 − r)e<sup>−r/4</sup>',desc:'2 個角節面、1 個徑向節面。'},
+'4dyz':{R:44,title:'4d_yz',f:(x,y,z,r)=>y*z*(6-r)*Math.exp(-r/4),formula:'ψ₄d<sub>yz</sub> ∝ yz(6 − r)e<sup>−r/4</sup>',desc:'2 個角節面、1 個徑向節面。'},
+'4dxy':{R:44,title:'4d_xy',f:(x,y,z,r)=>x*y*(6-r)*Math.exp(-r/4),formula:'ψ₄d<sub>xy</sub> ∝ xy(6 − r)e<sup>−r/4</sup>',desc:'2 個角節面、1 個徑向節面。'},
+'4dx2y2':{R:44,title:'4d_x²−y²',f:(x,y,z,r)=>(x*x-y*y)*(6-r)*Math.exp(-r/4),formula:'ψ₄d<sub>x²−y²</sub> ∝ (x² − y²)(6 − r)e<sup>−r/4</sup>',desc:'2 個角節面、1 個徑向節面。'},
+'4fxz2':{R:44,title:'4f_x(5z²−r²)',f:(x,y,z,r)=>x*(5*z*z-r*r)*Math.exp(-r/4),formula:'ψ₄f ∝ x(5z² − r²)e<sup>−r/4</sup>',desc:'4f 的實值組合。'},
+'4fyz2':{R:44,title:'4f_y(5z²−r²)',f:(x,y,z,r)=>y*(5*z*z-r*r)*Math.exp(-r/4),formula:'ψ₄f ∝ y(5z² − r²)e<sup>−r/4</sup>',desc:'4f 的實值組合。'},
+'4fz3':{R:44,title:'4f_z(5z²−3r²)',f:(x,y,z,r)=>z*(5*z*z-3*r*r)*Math.exp(-r/4),formula:'ψ₄f ∝ z(5z² − 3r²)e<sup>−r/4</sup>',desc:'4f 的軸對稱實值組合。'},
+'4fxyz':{R:44,title:'4f_xyz',f:(x,y,z,r)=>x*y*z*Math.exp(-r/4),formula:'ψ₄f ∝ xyz e<sup>−r/4</sup>',desc:'8 個葉瓣；三個座標平面均是節面。'},
+'4fx3':{R:44,title:'4f_x(x²−3y²)',f:(x,y,z,r)=>x*(x*x-3*y*y)*Math.exp(-r/4),formula:'ψ₄f ∝ x(x² − 3y²)e<sup>−r/4</sup>',desc:'4f 的平面實值組合。'},
+'4fy3':{R:44,title:'4f_y(3x²−y²)',f:(x,y,z,r)=>y*(3*x*x-y*y)*Math.exp(-r/4),formula:'ψ₄f ∝ y(3x² − y²)e<sup>−r/4</sup>',desc:'4f 的平面實值組合。'},
+'4fzx2y2':{R:44,title:'4f_z(x²−y²)',f:(x,y,z,r)=>z*(x*x-y*y)*Math.exp(-r/4),formula:'ψ₄f ∝ z(x² − y²)e<sup>−r/4</sup>',desc:'4f 的實值組合。'}
+};
+let points={x:[],y:[],z:[],sign:[]};let paused=false,acc=0,lastTime=performance.now(),densityMax=1,dirty=true;
+function spec(){return specs[orbital.value]}
+function updateLabels(){let s=spec();document.getElementById('orbitalName').textContent=s.title;document.getElementById('rateValue').textContent=rate.value+' 點／秒';document.getElementById('maxValue').textContent=(+maxPoints.value).toLocaleString();document.getElementById('formula').innerHTML='<strong>'+s.title+'</strong><br>'+s.formula+'<br><span style="color:#9fc0dc">P(x,y,z) ∝ |ψ|²</span>';document.getElementById('description').textContent=s.desc}
+function estimateMax(s){let max=0,R=s.R;for(let i=0;i<25000;i++){let x=(Math.random()*2-1)*R,y=(Math.random()*2-1)*R,z=(Math.random()*2-1)*R,r=Math.hypot(x,y,z),v=s.f(x,y,z,r);max=Math.max(max,v*v)}return max*1.15||1}
+function sample(){let s=spec(),R=s.R;for(let tries=0;tries<20000;tries++){let x=(Math.random()*2-1)*R,y=(Math.random()*2-1)*R,z=(Math.random()*2-1)*R,r=Math.hypot(x,y,z),v=s.f(x,y,z,r);if(Math.random()<(v*v)/densityMax)return{x:x,y:y,z:z,sign:v>=0?1:-1}}return null}
+function addPoints(n){let cap=+maxPoints.value;for(let i=0;i<n;i++){let p=sample();if(p){points.x.push(p.x);points.y.push(p.y);points.z.push(p.z);points.sign.push(p.sign)}}if(points.x.length>cap){let c=points.x.length-cap;points.x.splice(0,c);points.y.splice(0,c);points.z.splice(0,c);points.sign.splice(0,c)}dirty=true}
+function axisTraces(R){return[{type:'scatter3d',mode:'lines',x:[-R,R],y:[0,0],z:[0,0],name:'x 軸',line:{color:'#eb6674',width:4},hoverinfo:'skip'},{type:'scatter3d',mode:'lines',x:[0,0],y:[-R,R],z:[0,0],name:'y 軸',line:{color:'#5fcf93',width:4},hoverinfo:'skip'},{type:'scatter3d',mode:'lines',x:[0,0],y:[0,0],z:[-R,R],name:'z 軸',line:{color:'#62aef8',width:4},hoverinfo:'skip'}]}
+function layout(){let R=spec().R;return{paper_bgcolor:'#07111f',plot_bgcolor:'#07111f',margin:{l:0,r:0,t:26,b:0},title:{text:spec().title+'｜已抽樣 '+points.x.length.toLocaleString()+' 點',font:{color:'#eaf4ff',size:16}},showlegend:true,legend:{x:.01,y:.99,font:{color:'#d7e9f9'},bgcolor:'rgba(7,17,31,.45)'},scene:{bgcolor:'#07111f',aspectmode:'cube',xaxis:{title:'x / a₀',color:'#a9c7e2',gridcolor:'#1b3955',zerolinecolor:'#6087aa',range:[-R,R]},yaxis:{title:'y / a₀',color:'#a9c7e2',gridcolor:'#1b3955',zerolinecolor:'#6087aa',range:[-R,R]},zaxis:{title:'z / a₀',color:'#a9c7e2',gridcolor:'#1b3955',zerolinecolor:'#6087aa',range:[-R,R]},camera:{eye:{x:1.45,y:1.45,z:1.15}}}}}
+function render(force){if(!dirty&&!force)return;let pos={x:[],y:[],z:[]},neg={x:[],y:[],z:[]};for(let i=0;i<points.x.length;i++){let q=points.sign[i]>0?pos:neg;q.x.push(points.x[i]);q.y.push(points.y[i]);q.z.push(points.z[i])}let R=spec().R;let traces=[{type:'scatter3d',mode:'markers',x:pos.x,y:pos.y,z:pos.z,name:'ψ > 0',marker:{size:2.6,color:'#5edcff',opacity:.74},hoverinfo:'skip'},{type:'scatter3d',mode:'markers',x:neg.x,y:neg.y,z:neg.z,name:'ψ < 0',marker:{size:2.6,color:'#ff7ab6',opacity:.74},hoverinfo:'skip'},{type:'scatter3d',mode:'markers',x:[0],y:[0],z:[0],name:'原子核',marker:{size:7,color:'#fff4b1',line:{color:'#ffcf54',width:1}},hovertemplate:'原子核<extra></extra>'}].concat(axisTraces(R));Plotly.react(plot,traces,layout(),{responsive:true,displaylogo:false,modeBarButtonsToRemove:['toImage']});dirty=false}
+function reset(){points={x:[],y:[],z:[],sign:[]};densityMax=estimateMax(spec());updateLabels();dirty=true;render(true)}
+function animate(now){let dt=(now-lastTime)/1000;lastTime=now;if(!paused){acc+=dt*(+rate.value);let count=Math.min(100,Math.floor(acc));if(count>0){addPoints(count);acc-=count}}render(false);requestAnimationFrame(animate)}
+orbital.addEventListener('change',reset);rate.addEventListener('input',updateLabels);maxPoints.addEventListener('input',()=>{updateLabels();if(points.x.length>+maxPoints.value){let c=points.x.length-(+maxPoints.value);points.x.splice(0,c);points.y.splice(0,c);points.z.splice(0,c);points.sign.splice(0,c);dirty=true}});document.getElementById('pauseBtn').addEventListener('click',()=>{paused=!paused;document.getElementById('pauseBtn').textContent=paused?'繼續':'暫停'});document.getElementById('resetBtn').addEventListener('click',reset);
+updateLabels();reset();requestAnimationFrame(animate);
+})();
+</script>
+</body></html>
