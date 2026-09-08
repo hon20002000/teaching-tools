@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動化學：原子的電子排佈</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #6c3483;
+            margin-bottom: 5px;
+            border-bottom: 3px solid #af7ac5;
+            padding-bottom: 10px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            max-width: 950px;
+            width: 100%;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .canvas-area {
+            flex: 1.5;
+            min-width: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #ffffff;
+            border: 2px solid #e5e7e9;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        canvas {
+            background-color: #ffffff;
+            margin-bottom: 15px;
+        }
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .theory-box {
+            background-color: #f5eef8;
+            padding: 15px;
+            border-left: 5px solid #9b59b6;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        .controls {
+            background: #eaf2f8;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #d4e6f1;
+        }
+        .slider-container {
+            margin: 15px 0;
+        }
+        input[type=range] {
+            width: 100%;
+            accent-color: #3498db;
+        }
+        .data-display {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .data-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .arrangement-text {
+            font-size: 2em;
+            color: #2980b9;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 10px 0 0 0;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .btn:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+
+    <h1>⚛️ 原子的電子排佈 (首 20 種元素)</h1>
+
+    <div class="container">
+        
+        <!-- 左側：控制與理論面板 -->
+        <div class="panel">
+            <div class="theory-box">
+                <h3 style="margin-top: 0; color: #6c3483;">電子層與規則</h3>
+                <p>電子沿著固定的軌道運行，形成<strong>電子層</strong>。</p>
+                <p><strong>排佈規則：</strong></p>
+                <ul>
+                    <li>容量規律：最大容納量為 <strong>2n<sup>2</sup></strong>（第一層 2、第二層 8、第三層 8...）。</li>
+                    <li>方位規則：電子在各個電子層上，嚴格依循<strong>上下左右 4 個方向</strong>分佈，當單個方向滿 2 個電子時則成對排列。</li>
+                </ul>
+            </div>
+
+            <div class="controls">
+                <h3 style="margin-top: 0;">選擇元素 (原子序 1 - 20)</h3>
+                <div class="slider-container">
+                    <input type="range" id="elementSlider" min="1" max="20" value="1" oninput="updateElement()">
+                </div>
+                <div>
+                    <button class="btn" onclick="changeElement(-1)">◀ 上一個</button>
+                    <span id="atomicNumberDisplay" style="font-weight: bold; font-size: 1.2em; margin: 0 15px;">原子序: 1</span>
+                    <button class="btn" onclick="changeElement(1)">下一個 ▶</button>
+                </div>
+            </div>
+
+            <div class="data-display">
+                <div class="data-card">
+                    <div style="font-size: 1.2em; color: #7f8c8d;">目前元素</div>
+                    <div style="font-size: 2.5em; font-weight: bold; margin: 5px 0;" id="elementSymbolName">H 氫</div>
+                </div>
+                <div class="data-card">
+                    <div style="font-size: 1.2em; color: #7f8c8d;">電子排佈</div>
+                    <div class="arrangement-text" id="arrangementDisplay">1</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：視覺化畫布 -->
+        <div class="canvas-area">
+            <h3 style="margin-top:0; color: #34495e;">原子電子圖</h3>
+            <canvas id="atomCanvas" width="400" height="400"></canvas>
+            <p style="color: #7f8c8d; font-size: 0.9em;">藍圈代表電子層，黑點代表電子（固定於上下左右四方位）。</p>
+        </div>
+
+    </div>
+
+<script>
+    // 週期表首 20 種元素資料
+    const elementsData = [
+        { z: 1,  sym: "H",  name: "氫" },  { z: 2,  sym: "He", name: "氦" },
+        { z: 3,  sym: "Li", name: "鋰" },  { z: 4,  sym: "Be", name: "鈹" },
+        { z: 5,  sym: "B",  name: "硼" },  { z: 6,  sym: "C",  name: "碳" },
+        { z: 7,  sym: "N",  name: "氮" },  { z: 8,  sym: "O",  name: "氧" },
+        { z: 9,  sym: "F",  name: "氟" },  { z: 10, sym: "Ne", name: "氖" },
+        { z: 11, sym: "Na", name: "鈉" },  { z: 12, sym: "Mg", name: "鎂" },
+        { z: 13, sym: "Al", name: "鋁" },  { z: 14, sym: "Si", name: "硅" },
+        { z: 15, sym: "P",  name: "磷" },  { z: 16, sym: "S",  name: "硫" },
+        { z: 17, sym: "Cl", name: "氯" },  { z: 18, sym: "Ar", name: "氬" },
+        { z: 19, sym: "K",  name: "鉀" },  { z: 20, sym: "Ca", name: "鈣" }
+    ];
+
+    const canvas = document.getElementById('atomCanvas');
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    function calculateArrangement(z) {
+        let remaining = z;
+        let shells = [];
+        let shellCaps = [2, 8, 8, 2];
+        
+        for (let cap of shellCaps) {
+            if (remaining > 0) {
+                let inThisShell = Math.min(remaining, cap);
+                shells.push(inThisShell);
+                remaining -= inThisShell;
+            }
+        }
+        return shells;
+    }
+
+    function changeElement(delta) {
+        let slider = document.getElementById('elementSlider');
+        let newVal = parseInt(slider.value) + delta;
+        if (newVal >= 1 && newVal <= 20) {
+            slider.value = newVal;
+            updateElement();
+        }
+    }
+
+    function updateElement() {
+        let z = parseInt(document.getElementById('elementSlider').value);
+        let element = elementsData[z - 1];
+        let arrangement = calculateArrangement(z);
+        
+        document.getElementById('atomicNumberDisplay').innerText = `原子序: ${z}`;
+        document.getElementById('elementSymbolName').innerText = `${element.sym} ${element.name}`;
+        document.getElementById('arrangementDisplay').innerText = arrangement.join(", ");
+
+        drawAtom(element.sym, arrangement);
+    }
+
+    function drawAtom(symbol, shells) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 畫原子核
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 28, 0, Math.PI * 2);
+        ctx.fillStyle = "#f8f9fa";
+        ctx.fill();
+        ctx.strokeStyle = "#3498db";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "#2c3e50";
+        ctx.font = "bold 20px 'Times New Roman', serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(symbol, centerX, centerY);
+
+        const baseRadius = 45;
+        const radiusStep = 35;
+
+        // 4 個基本方向的角度 (對應上下左右：上、右、下、左)
+        // 為了讓視覺上好看，設定順序為：頂端(-PI/2)、右側(0)、底端(PI/2)、左側(PI)
+        const directions = [-Math.PI / 2, 0, Math.PI / 2, Math.PI];
+
+        for (let i = 0; i < shells.length; i++) {
+            let radius = baseRadius + (i * radiusStep);
+            let numElectrons = shells[i];
+
+            // 畫電子軌道
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = "#85c1e9";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // 嚴格分配在上下左右 4 個方向
+            // 分配邏輯：
+            // 若電子數 <= 4，依序填入 4 個方向各 1 顆。
+            // 若電子數 > 4，先在 4 個方向各填 1 顆，剩下的再依序填入作為第二顆（成對）。
+            for (let j = 0; j < numElectrons; j++) {
+                let dirIndex = j % 4;          // 0:上, 1:右, 2:下, 3:左
+                let isPair = Math.floor(j / 4); // 0 表示單顆，1 表示第二顆（成對）
+                
+                let baseAngle = directions[dirIndex];
+                let ex = centerX + radius * Math.cos(baseAngle);
+                let ey = centerY + radius * Math.sin(baseAngle);
+
+                // 如果是同方向的第二顆電子（成對），沿切線方向微微偏移以做出雙點並排效果
+                if (isPair > 0) {
+                    let tangentAngle = baseAngle + Math.PI / 2;
+                    let offset = 8; // 偏移距離
+                    ex += offset * Math.cos(tangentAngle);
+                    ey += offset * Math.sin(tangentAngle);
+                }
+
+                // 放大黑點半徑至 4 像素，確保清晰可見
+                ctx.beginPath();
+                ctx.arc(ex, ey, 4, 0, Math.PI * 2);
+                ctx.fillStyle = "#111111";
+                ctx.fill();
+            }
+        }
+    }
+
+    updateElement();
+</script>
+
+</body>
+</html>

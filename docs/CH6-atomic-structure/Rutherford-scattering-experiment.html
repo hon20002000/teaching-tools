@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動實驗室：盧瑟福金箔散射實驗</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            width: 100%;
+            gap: 20px;
+        }
+        .canvas-container {
+            flex: 2;
+            min-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            background-color: #1e272e;
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            cursor: crosshair;
+        }
+        .legend {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #555;
+            display: flex;
+            gap: 15px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+        
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .theory-box {
+            background-color: #e8f6f3;
+            padding: 15px;
+            border-left: 5px solid #1abc9c;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95em;
+        }
+        .theory-box h3 { margin-top: 0; color: #16a085; }
+        .theory-box ul { padding-left: 20px; margin-bottom: 0; }
+        
+        .controls {
+            background: #fdf2e9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #fad7a1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        .btn:hover { background: #2980b9; }
+        .btn.fire-direct { background: #e74c3c; }
+        .btn.fire-direct:hover { background: #c0392b; }
+        .btn.clear { background: #95a5a6; }
+        .btn.clear:hover { background: #7f8c8d; }
+        
+        .stats-box {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #eee;
+        }
+        .stat-val { font-weight: bold; font-size: 1.2em; }
+        .stat-val.straight { color: #2ecc71; }
+        .stat-val.deflected { color: #f39c12; }
+        .stat-val.bounced { color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <h1>⚛️ 盧瑟福發現原子核</h1>
+    <div class="subtitle">金箔散射實驗互動模擬 (1909年)</div>
+
+    <div class="container">
+        
+        <div class="canvas-container">
+            <canvas id="experimentCanvas" width="600" height="400"></canvas>
+            <div class="legend">
+                <div class="legend-item"><span class="dot" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);"></span> 金原子 (電子佔據的空間)</div>
+                <div class="legend-item"><span class="dot" style="background: #ff4757; box-shadow: 0 0 5px #ff4757;"></span> 帶正電的原子核</div>
+                <div class="legend-item"><span class="dot" style="background: #2ecc71;"></span> α粒子束</div>
+            </div>
+            <p style="font-size: 0.85em; color: #7f8c8d; margin-top: 10px;">💡 提示：你可以直接點擊畫布上的黑色區域，從該高度發射單顆 α 粒子。</p>
+        </div>
+
+        <div class="panel">
+            
+            <div class="theory-box">
+                <h3>從閱讀中學習：實驗結論</h3>
+                <p>根據 α 粒子射向極薄金箔的結果，盧瑟福提出：</p>
+                <ul>
+                    <li><strong>原子內大部分都是空間：</strong> 因為絕大多數 α 粒子毫無偏轉地穿過。</li>
+                    <li><strong>極微小、密度極高的核心：</strong> 因為只有極少數 α 粒子發生大角度偏轉或反彈。這區域被稱為<strong>「原子核」</strong>，且帶有正電荷（會排斥同樣帶正電的 α 粒子）。</li>
+                </ul>
+            </div>
+
+            <div class="controls">
+                <button class="btn" onclick="fireRandomBeam(15)">放射 α 粒子束 (15顆)</button>
+                <button class="btn fire-direct" onclick="fireHeadOn()">🎯 發射「正面撞擊」粒子 (觀察反彈)</button>
+                <button class="btn clear" onclick="clearCanvas()">🧹 清除軌跡與數據</button>
+            </div>
+
+            <div class="stats-box">
+                <h3 style="margin: 0 0 10px 0; color: #2c3e50;">實驗觀測統計</h3>
+                <div class="stat-row">
+                    <span>沒有偏轉 (穿過) <br><small style="color:#777; font-size:0.8em;">(角度 < 5°)</small></span>
+                    <span class="stat-val straight" id="countStraight">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>發生偏轉 <br><small style="color:#777; font-size:0.8em;">(5° 到 90°之間)</small></span>
+                    <span class="stat-val deflected" id="countDeflected">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>反彈至源頭 <br><small style="color:#777; font-size:0.8em;">(角度 > 90°)</small></span>
+                    <span class="stat-val bounced" id="countBounced">0</span>
+                </div>
+                <div style="text-align: right; font-size: 0.85em; color: #888; margin-top: 5px;">
+                    總發射數：<span id="countTotal">0</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('experimentCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const ATOM_RADIUS = 50;     
+    const NUCLEUS_RADIUS = 7;   // (修改) 放大原子核半徑，使其更顯眼
+    const COULOMB_K = 40;       
+    const INITIAL_SPEED = 7.0;  
+
+    let atoms = [];
+    let particles = [];
+    let stats = { straight: 0, deflected: 0, bounced: 0, total: 0 };
+
+    function initAtoms() {
+        atoms = [];
+        const cols = 5;
+        const rows = 4;
+        const spacingX = 100;
+        const spacingY = 90;
+        const offsetX = 180;
+        const offsetY = 65;
+
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                let yShift = (i % 2 === 0) ? 0 : spacingY / 2;
+                atoms.push({
+                    x: offsetX + i * spacingX,
+                    y: offsetY + j * spacingY + yShift
+                });
+            }
+        }
+    }
+
+    class AlphaParticle {
+        constructor(y) {
+            this.x = 10;
+            this.y = y;
+            this.vx = INITIAL_SPEED;
+            this.vy = 0;
+            this.trail = [];
+            this.active = true;
+            this.classified = false;
+        }
+
+        update() {
+            if (!this.active) return;
+
+            if (this.trail.length === 0 || Math.random() > 0.3) {
+                this.trail.push({x: this.x, y: this.y});
+            }
+            if (this.trail.length > 250) this.trail.shift();
+
+            for (let atom of atoms) {
+                let dx = this.x - atom.x;
+                let dy = this.y - atom.y;
+                let distSq = dx * dx + dy * dy;
+                let dist = Math.sqrt(distSq);
+
+                if (dist < ATOM_RADIUS * 0.4) {
+                    if (dist < 1) dist = 1; 
+                    let force = COULOMB_K / distSq; 
+                    this.vx += (dx / dist) * force;
+                    this.vy += (dy / dist) * force;
+                }
+            }
+
+            this.x += this.vx;
+            this.y += this.vy;
+
+            if (this.x < -20 || this.x > canvas.width + 20 || this.y < -20 || this.y > canvas.height + 20) {
+                this.active = false;
+                if (!this.classified) this.classifyResult();
+            }
+        }
+
+        classifyResult() {
+            this.classified = true;
+            stats.total++;
+            
+            let finalAngle = Math.abs(Math.atan2(this.vy, this.vx) * (180 / Math.PI));
+            
+            if (this.vx < 0) {
+                stats.bounced++;
+            } else {
+                if (finalAngle < 5) {
+                    stats.straight++;
+                } else {
+                    stats.deflected++;
+                }
+            }
+            updateStatsUI();
+        }
+
+        draw(ctx) {
+            if (this.trail.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                for (let i = 1; i < this.trail.length; i++) {
+                    ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                }
+                // (修改) 提高軌跡的不透明度與粗細
+                ctx.strokeStyle = "rgba(46, 204, 113, 0.7)"; 
+                ctx.lineWidth = 2.5; 
+                ctx.stroke();
+            }
+
+            if (this.active) {
+                ctx.beginPath();
+                // (修改) 稍微放大飛行的 α 粒子
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2); 
+                ctx.fillStyle = "#2ecc71";
+                ctx.fill();
+            }
+        }
+    }
+
+    function drawScene() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#34495e";
+        ctx.fillRect(-10, canvas.height/2 - 40, 30, 80);
+        ctx.fillStyle = "#f1c40f"; 
+        ctx.fillRect(15, canvas.height/2 - 15, 5, 30);
+
+        for (let atom of atoms) {
+            ctx.beginPath();
+            ctx.arc(atom.x, atom.y, ATOM_RADIUS, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(atom.x, atom.y, NUCLEUS_RADIUS, 0, Math.PI * 2);
+            ctx.fillStyle = "#ff4757"; 
+            ctx.fill();
+            // (修改) 增強原子核的發光效果，使其更醒目
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#ff4757";
+            ctx.fill();
+            ctx.shadowBlur = 0; 
+        }
+
+        for (let p of particles) {
+            p.update();
+            p.draw(ctx);
+        }
+
+        particles = particles.filter(p => p.active || p.trail.length > 50);
+        for(let p of particles){
+            if(!p.active && p.trail.length > 0) p.trail.shift(); 
+        }
+
+        requestAnimationFrame(drawScene);
+    }
+
+    function fireRandomBeam(count) {
+        for(let i=0; i<count; i++) {
+            setTimeout(() => {
+                let y = 50 + Math.random() * (canvas.height - 100);
+                particles.push(new AlphaParticle(y));
+            }, i * 80);
+        }
+    }
+
+    function fireHeadOn() {
+        if(atoms.length > 0) {
+            let targetY = atoms[1].y + (Math.random() * 0.2 - 0.1); 
+            particles.push(new AlphaParticle(targetY));
+        }
+    }
+
+    function clearCanvas() {
+        particles = [];
+        stats = { straight: 0, deflected: 0, bounced: 0, total: 0 };
+        updateStatsUI();
+    }
+
+    function updateStatsUI() {
+        document.getElementById('countStraight').innerText = stats.straight;
+        document.getElementById('countDeflected').innerText = stats.deflected;
+        document.getElementById('countBounced').innerText = stats.bounced;
+        document.getElementById('countTotal').innerText = stats.total;
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const y = e.clientY - rect.top;
+        particles.push(new AlphaParticle(y));
+    });
+
+    initAtoms();
+    drawScene();
+
+</script>
+
+</body>
+</html>
